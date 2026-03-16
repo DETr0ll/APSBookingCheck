@@ -107,8 +107,9 @@ async def find_first_available(page, url):
             if disabled == "true":
                 continue
 
-            log.info("First available: %s", aria)
-            return aria, "ok"
+            clean = aria.split(".")[0].strip()
+            log.info("First available: %s", clean)
+            return clean, "ok"
 
         # No available day found this month — go to next month
         next_btn = page.locator('[role="button"][aria-label="Next month"]')
