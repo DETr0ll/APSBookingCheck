@@ -26,7 +26,7 @@ SERVICES = [
     },
     # Add more services here:
     # {
-    #     "id": "service-id",           # unique slug, used in API responses
+    #     "id": "service-id",
     #     "label": "Human-readable name",
     #     "url": "https://outlook.office.com/book/...",
     # },
@@ -35,7 +35,6 @@ SERVICES = [
 
 
 def init_db():
-    """Create the availability table if it doesn't exist."""
     con = sqlite3.connect(DB_PATH)
     con.execute("""
         CREATE TABLE IF NOT EXISTS availability (
@@ -51,7 +50,7 @@ def init_db():
     con.close()
 
 
-def save_result(service_id: str, label: str, url: str, first_available: str | None, status: str):
+def save_result(service_id, label, url, first_available, status):
     con = sqlite3.connect(DB_PATH)
     con.execute("""
         INSERT INTO availability (id, label, url, first_available, status, last_checked)
@@ -67,7 +66,7 @@ def save_result(service_id: str, label: str, url: str, first_available: str | No
     con.close()
 
 
-async def find_first_available(page, url: str) -> tuple[str | None, str]:
+async def find_first_available(page, url):
     """
     Returns (first_available_date_string, status).
     status is one of: 'ok', 'none_found', 'error'
@@ -75,7 +74,12 @@ async def find_first_available(page, url: str) -> tuple[str | None, str]:
     try:
         await page.goto(url, wait_until="networkidle", timeout=60_000)
     except PlaywrightTimeoutError:
+        log.warning("Page load timed out for %s", url)
         return None, "error"
+
+    # Log page title to confirm something loaded
+    title = await page.title()
+    log.info("Page title: %s", title)
 
     # Wait for the calendar to render
     try:
@@ -85,13 +89,26 @@ async def find_first_available(page, url: str) -> tuple[str | None, str]:
         )
     except PlaywrightTimeoutError:
         log.warning("Calendar did not appear in time for %s", url)
+        # Dump page HTML so we can see what actually loaded
+        html = await page.content()
+        log.warning("PAGE HTML SNAPSHOT (first 3000 chars):\n%s", html[:3000])
         return None, "error"
 
     await page.wait_for_timeout(2_000)
 
     for month_num in range(MAX_MONTHS_TO_CHECK):
-        # Available days: enabled button elements that represent calendar days
-        # Microsoft Bookings disables unavailable days via aria-disabled or disabled attr
+        # Log all buttons on first month pass to identify correct selectors
+        if month_num == 0:
+            all_buttons = page.locator("button")
+            btn_count = await all_buttons.count()
+            log.info("Total buttons found on page: %d", btn_count)
+            for i in range(min(btn_count, 30)):
+                btn = all_buttons.nth(i)
+                label = await btn.get_attribute("aria-label")
+                cls = await btn.get_attribute("class")
+                text = await btn.inner_text()
+                log.info("Button %d: aria-label=%r class=%r text=%r", i, label, cls, text[:40] if text else "")
+
         available = page.locator(
             'button[class*="day"]:not([disabled]):not([aria-disabled="true"]):not([class*="disabled"]):not([class*="outside"])'
         )
