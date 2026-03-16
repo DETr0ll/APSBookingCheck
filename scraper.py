@@ -77,42 +77,49 @@ async def find_first_available(page, url):
         log.warning("Page load timed out for %s", url)
         return None, "error"
 
-    log.info("Page title: %s", await page.title())
-
-    # Give the React app plenty of time to boot and render
-    log.info("Waiting 10s for SPA to render...")
+    # Wait for the SPA to render the calendar
     await page.wait_for_timeout(10_000)
 
-    # Log everything visible to diagnose the page state
-    html = await page.content()
-    log.info("HTML length after 10s wait: %d chars", len(html))
+    for month_num in range(MAX_MONTHS_TO_CHECK):
+        # Calendar day cells use role="button", available ones do NOT have aria-disabled="true"
+        # and their aria-label does not contain "No available times"
+        day_cells = page.locator('[role="button"][aria-label]')
+        count = await day_cells.count()
+        log.info("Month %d: checking %d role=button elements", month_num + 1, count)
 
-    # Dump all buttons so we can see what's on screen
-    all_buttons = page.locator("button")
-    btn_count = await all_buttons.count()
-    log.info("Total buttons found: %d", btn_count)
-    for i in range(min(btn_count, 40)):
-        btn = all_buttons.nth(i)
-        aria = await btn.get_attribute("aria-label")
-        cls = await btn.get_attribute("class")
-        txt = (await btn.inner_text()).strip()
-        log.info("  btn[%d] aria-label=%r class=%r text=%r", i, aria, cls, txt[:60] if txt else "")
+        for i in range(count):
+            cell = day_cells.nth(i)
+            aria = await cell.get_attribute("aria-label")
+            disabled = await cell.get_attribute("aria-disabled")
 
-    # Also log any elements with role=gridcell or role=button that might be date cells
-    gridcells = page.locator('[role="gridcell"], [role="button"]')
-    gc_count = await gridcells.count()
-    log.info("Total gridcell/button role elements: %d", gc_count)
-    for i in range(min(gc_count, 20)):
-        el = gridcells.nth(i)
-        aria = await el.get_attribute("aria-label")
-        cls = await el.get_attribute("class")
-        disabled = await el.get_attribute("aria-disabled")
-        log.info("  gridcell[%d] aria-label=%r class=%r aria-disabled=%r", i, aria, cls, disabled)
+            if not aria:
+                continue
 
-    # Log a chunk of the HTML to see the structure
-    log.info("HTML SNAPSHOT (chars 3000-6000):\n%s", html[3000:6000])
+            # Skip navigation buttons (Prev/Next month)
+            if "month" in aria.lower():
+                continue
 
-    return None, "error"
+            # Skip days with no availability
+            if "no available times" in aria.lower():
+                continue
+
+            # Skip explicitly disabled cells
+            if disabled == "true":
+                continue
+
+            log.info("First available: %s", aria)
+            return aria, "ok"
+
+        # No available day found this month — go to next month
+        next_btn = page.locator('[role="button"][aria-label="Next month"]')
+        if await next_btn.count() == 0:
+            log.warning("Could not find Next month button")
+            return None, "error"
+
+        await next_btn.click()
+        await page.wait_for_timeout(2_000)
+
+    return None, "none_found"
 
 
 async def run_scraper():
