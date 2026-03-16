@@ -20,10 +20,46 @@ MAX_MONTHS_TO_CHECK = 6
 # ── Add your services here ────────────────────────────────────────────────────
 SERVICES = [
     {
-        "id": "advice-shop-jim-walker",
-        "label": "Advice Shop – Jim Walker Partnership Centre",
+        "id": "f2f-ADP",
+        "label": "Adult Disability Payment - Bathgate",
         "url": "https://outlook.office.com/book/AdviceShopJimWalkerPartnershipCentreCopy@westlothian.gov.uk/s/sftSX3pA2EK05NlKZHI73A2?ismsaljsauthenabled",
     },
+    {
+        "id": "f2f-CDP",
+        "label": "Child Disability Payment - Bathgate",
+        "url": "https://outlook.office.com/book/AdviceShopJimWalkerPartnershipCentreCopy@westlothian.gov.uk/s/c5tycRhTaEaN9fYFtZu3Fg2?ismsaljsauthenabled",
+    },
+    {
+        "id": "f2f-PADP",
+        "label": "Pension Age Disability Payment - Bathgate",
+        "url": "https://outlook.office.com/book/AdviceShopJimWalkerPartnershipCentreCopy@westlothian.gov.uk/s/qEIJOofjTUO6K4LzEVpAoQ2?ismsaljsauthenabled",
+    },
+    {
+        "id": "f2f-WCA",
+        "label": "Work Capability Assessment - Bathgate",
+        "url": "https://outlook.office.com/book/AdviceShopJimWalkerPartnershipCentreCopy@westlothian.gov.uk/s/KIR6DbXbW0WBtlkIVEhvew2?ismsaljsauthenabled",
+    },
+        {
+        "id": "phone-ADP",
+        "label": "Adult Disability Payment - Telephone",
+        "url": "https://outlook.office.com/book/AdviceShopTelephoneAppointments@westlothian.gov.uk/s/sftSX3pA2EK05NlKZHI73A2?ismsaljsauthenabled",
+    },
+    {
+        "id": "phone-CDP",
+        "label": "Child Disability Payment - Telephone",
+        "url": "https://outlook.office.com/book/AdviceShopTelephoneAppointments@westlothian.gov.uk/s/c5tycRhTaEaN9fYFtZu3Fg2?ismsaljsauthenabled",
+    },
+    {
+        "id": "phone-PADP",
+        "label": "Pension Age Disability Payment - Telephone",
+        "url": "https://outlook.office.com/book/AdviceShopTelephoneAppointments@westlothian.gov.uk/s/qEIJOofjTUO6K4LzEVpAoQ2?ismsaljsauthenabled",
+    },
+    {
+        "id": "phone-WCA",
+        "label": "Work Capability Assessment - Telephone",
+        "url": "https://outlook.office.com/book/AdviceShopTelephoneAppointments@westlothian.gov.uk/s/KIR6DbXbW0WBtlkIVEhvew2?ismsaljsauthenabled",
+    },
+    
     # Add more services here:
     # {
     #     "id": "service-id",
