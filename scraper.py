@@ -72,72 +72,47 @@ async def find_first_available(page, url):
     status is one of: 'ok', 'none_found', 'error'
     """
     try:
-        await page.goto(url, wait_until="networkidle", timeout=60_000)
+        await page.goto(url, wait_until="domcontentloaded", timeout=60_000)
     except PlaywrightTimeoutError:
         log.warning("Page load timed out for %s", url)
         return None, "error"
 
-    # Log page title to confirm something loaded
-    title = await page.title()
-    log.info("Page title: %s", title)
+    log.info("Page title: %s", await page.title())
 
-    # Wait for the calendar to render
-    try:
-        await page.wait_for_selector(
-            '[data-testid="date-picker"], .ms-DatePicker, [role="grid"], button[class*="day"]',
-            timeout=30_000
-        )
-    except PlaywrightTimeoutError:
-        log.warning("Calendar did not appear in time for %s", url)
-        # Dump page HTML so we can see what actually loaded
-        html = await page.content()
-        log.warning("PAGE HTML SNAPSHOT (first 3000 chars):\n%s", html[:3000])
-        return None, "error"
+    # Give the React app plenty of time to boot and render
+    log.info("Waiting 10s for SPA to render...")
+    await page.wait_for_timeout(10_000)
 
-    await page.wait_for_timeout(2_000)
+    # Log everything visible to diagnose the page state
+    html = await page.content()
+    log.info("HTML length after 10s wait: %d chars", len(html))
 
-    for month_num in range(MAX_MONTHS_TO_CHECK):
-        # Log all buttons on first month pass to identify correct selectors
-        if month_num == 0:
-            all_buttons = page.locator("button")
-            btn_count = await all_buttons.count()
-            log.info("Total buttons found on page: %d", btn_count)
-            for i in range(min(btn_count, 30)):
-                btn = all_buttons.nth(i)
-                label = await btn.get_attribute("aria-label")
-                cls = await btn.get_attribute("class")
-                text = await btn.inner_text()
-                log.info("Button %d: aria-label=%r class=%r text=%r", i, label, cls, text[:40] if text else "")
+    # Dump all buttons so we can see what's on screen
+    all_buttons = page.locator("button")
+    btn_count = await all_buttons.count()
+    log.info("Total buttons found: %d", btn_count)
+    for i in range(min(btn_count, 40)):
+        btn = all_buttons.nth(i)
+        aria = await btn.get_attribute("aria-label")
+        cls = await btn.get_attribute("class")
+        txt = (await btn.inner_text()).strip()
+        log.info("  btn[%d] aria-label=%r class=%r text=%r", i, aria, cls, txt[:60] if txt else "")
 
-        available = page.locator(
-            'button[class*="day"]:not([disabled]):not([aria-disabled="true"]):not([class*="disabled"]):not([class*="outside"])'
-        )
+    # Also log any elements with role=gridcell or role=button that might be date cells
+    gridcells = page.locator('[role="gridcell"], [role="button"]')
+    gc_count = await gridcells.count()
+    log.info("Total gridcell/button role elements: %d", gc_count)
+    for i in range(min(gc_count, 20)):
+        el = gridcells.nth(i)
+        aria = await el.get_attribute("aria-label")
+        cls = await el.get_attribute("class")
+        disabled = await el.get_attribute("aria-disabled")
+        log.info("  gridcell[%d] aria-label=%r class=%r aria-disabled=%r", i, aria, cls, disabled)
 
-        count = await available.count()
-        log.info("Month %d: found %d potentially available day buttons", month_num + 1, count)
+    # Log a chunk of the HTML to see the structure
+    log.info("HTML SNAPSHOT (chars 3000-6000):\n%s", html[3000:6000])
 
-        for i in range(count):
-            btn = available.nth(i)
-            label = await btn.get_attribute("aria-label")
-            if label and len(label) > 5:
-                log.info("First available: %s", label)
-                return label, "ok"
-
-        # Move to next month
-        next_btn = page.locator(
-            'button[aria-label*="next"], button[aria-label*="Next"], '
-            'button[class*="nextMonth"], button[class*="next-month"], '
-            'button[title*="next"], button[title*="Next"]'
-        ).first
-
-        if await next_btn.count() == 0:
-            log.warning("Could not find 'next month' button")
-            return None, "error"
-
-        await next_btn.click()
-        await page.wait_for_timeout(1_500)
-
-    return None, "none_found"
+    return None, "error"
 
 
 async def run_scraper():
