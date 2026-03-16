@@ -39,7 +39,7 @@ SERVICES = [
         "label": "Bathgate - Work Capability Assessment",
         "url": "https://outlook.office.com/book/AdviceShopJimWalkerPartnershipCentreCopy@westlothian.gov.uk/s/KIR6DbXbW0WBtlkIVEhvew2?ismsaljsauthenabled",
     },
-        {
+    {
         "id": "phone-ADP",
         "label": "Telephone - Adult Disability Payment",
         "url": "https://outlook.office.com/book/AdviceShopTelephoneAppointments@westlothian.gov.uk/s/sftSX3pA2EK05NlKZHI73A2?ismsaljsauthenabled",
@@ -59,13 +59,6 @@ SERVICES = [
         "label": "Telephone - Work Capability Assessment",
         "url": "https://outlook.office.com/book/AdviceShopTelephoneAppointments@westlothian.gov.uk/s/KIR6DbXbW0WBtlkIVEhvew2?ismsaljsauthenabled",
     },
-    
-    # Add more services here:
-    # {
-    #     "id": "service-id",
-    #     "label": "Human-readable name",
-    #     "url": "https://outlook.office.com/book/...",
-    # },
 ]
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -82,6 +75,18 @@ def init_db():
             last_checked    TEXT NOT NULL
         )
     """)
+    con.commit()
+    con.close()
+
+
+def update_status_only(service_id, status):
+    """Update status and last_checked without touching first_available."""
+    con = sqlite3.connect(DB_PATH)
+    con.execute("""
+        UPDATE availability
+        SET status = ?, last_checked = ?
+        WHERE id = ?
+    """, (status, datetime.utcnow().isoformat(), service_id))
     con.commit()
     con.close()
 
@@ -178,11 +183,17 @@ async def run_scraper():
             page = await context.new_page()
             try:
                 first_available, status = await find_first_available(page, service["url"])
-                save_result(service["id"], service["label"], service["url"], first_available, status)
-                log.info("Result for %s: %s (%s)", service["id"], first_available, status)
+                if first_available:
+                    # Only overwrite stored data when we have a valid result
+                    save_result(service["id"], service["label"], service["url"], first_available, status)
+                    log.info("Result for %s: %s (%s)", service["id"], first_available, status)
+                else:
+                    # Keep existing data but log the failure
+                    log.warning("No result for %s (%s) — keeping last known value", service["id"], status)
+                    update_status_only(service["id"], status)
             except Exception as e:
                 log.error("Unexpected error for %s: %s", service["id"], e)
-                save_result(service["id"], service["label"], service["url"], None, "error")
+                update_status_only(service["id"], "error")
             finally:
                 await page.close()
 
