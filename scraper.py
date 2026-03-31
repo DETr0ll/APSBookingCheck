@@ -24,6 +24,11 @@ SERVICES = [
         "label": "Bathgate - Adult Disability Payment",
         "url": "https://outlook.office.com/book/AdviceShopJimWalkerPartnershipCentreCopy@westlothian.gov.uk/s/sftSX3pA2EK05NlKZHI73A2?ismsaljsauthenabled",
     },
+        {
+        "id": "f2f-GE",
+        "label": "Bathgate - General Enquiry",
+        "url": "https://outlook.office.com/book/AdviceShopJimWalkerPartnershipCentreCopy@westlothian.gov.uk/s/ez1s4_bIZUyQ_vW6FBtw1g2?ismsaljsauthenabled",
+    },
     {
         "id": "f2f-CDP",
         "label": "Bathgate - Child Disability Payment",
@@ -58,6 +63,31 @@ SERVICES = [
         "id": "phone-WCA",
         "label": "Telephone - Work Capability Assessment",
         "url": "https://outlook.office.com/book/AdviceShopTelephoneAppointments@westlothian.gov.uk/s/KIR6DbXbW0WBtlkIVEhvew2?ismsaljsauthenabled",
+    },
+    {
+        "id": "outreach-blackburn",
+        "label": "Outreach - Blackburn",
+        "url": "https://outlook.office.com/book/AdviceShopExternalSessions@westlothian.gov.uk/s/ez1s4_bIZUyQ_vW6FBtw1g2?ismsaljsauthenabled",
+    },
+    {
+        "id": "outreach-broxburn",
+        "label": "Outreach - Broxburn",
+        "url": "https://outlook.office.com/book/AdviceShopExternalSessions@westlothian.gov.uk/s/rMiOiC1VsEub2Em5OFkPXg2?ismsaljsauthenabled",
+    },
+    {
+        "id": "outreach-fauldhouse-hub",
+        "label": "Outreach - Fauldhouse Hub",
+        "url": "https://outlook.office.com/book/AdviceShopExternalSessions@westlothian.gov.uk/s/aR54_wgTvEyRDa-Mh9XmrA2?ismsaljsauthenabled",
+    },
+        {
+        "id": "outreach-mosswood",
+        "label": "Outreach - Livingston North",
+        "url": "https://outlook.office.com/book/AdviceShopExternalSessions@westlothian.gov.uk/s/m66iYHcBq0C-qiGdQjkgJA2?ismsaljsauthenabled",
+    },
+            {
+        "id": "outreach-polbeth",
+        "label": "Outreach - Polbeth HUB",
+        "url": "https://outlook.office.com/book/AdviceShopExternalSessions@westlothian.gov.uk/s/sEDi8Q6Nh0iErPhc7aJ3Ug2?ismsaljsauthenabled",
     },
 ]
 # ─────────────────────────────────────────────────────────────────────────────
