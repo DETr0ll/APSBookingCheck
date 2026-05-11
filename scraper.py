@@ -24,11 +24,6 @@ SERVICES = [
         "label": "Bathgate - Adult Disability Payment",
         "url": "https://outlook.office.com/book/AdviceShopJimWalkerPartnershipCentreCopy@westlothian.gov.uk/s/sftSX3pA2EK05NlKZHI73A2?ismsaljsauthenabled",
     },
-        {
-        "id": "f2f-GE",
-        "label": "Bathgate - General Enquiry",
-        "url": "https://outlook.office.com/book/AdviceShopJimWalkerPartnershipCentreCopy@westlothian.gov.uk/s/ez1s4_bIZUyQ_vW6FBtw1g2?ismsaljsauthenabled",
-    },
     {
         "id": "f2f-CDP",
         "label": "Bathgate - Child Disability Payment",
